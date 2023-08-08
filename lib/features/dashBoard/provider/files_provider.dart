@@ -15,7 +15,6 @@ import 'package:live/app/core/utils/dimensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../data/error/failures.dart';
-import '../../../../main_models/StoreBranches.dart';
 import '../../../app/core/utils/app_storage_keys.dart';
 import '../../../app/core/utils/app_strings.dart';
 import '../../../app/core/utils/color_resources.dart';
@@ -134,7 +133,7 @@ class SpeakProvider extends ChangeNotifier {
   TextEditingController textEditingController = TextEditingController();
 
   String lang = 'ar';
-  FlutterTts flutterTts = FlutterTts();
+  // FlutterTts flutterTts = FlutterTts();
   List<String> orderStrings = [];
   restData() {
     orderStrings = [];
@@ -149,38 +148,38 @@ class SpeakProvider extends ChangeNotifier {
         region: "eastus",
         withLogs: true); // enable logs
 
-    await flutterTts.setLanguage(lang);
-
-    await flutterTts.setVoice({"name": "ar-xa-x-ard-local", "locale": "ar"});
-    await flutterTts.isLanguageAvailable(lang);
+    // await flutterTts.setLanguage(lang);
+    //
+    // await flutterTts.setVoice({"name": "ar-xa-x-ard-local", "locale": "ar"});
+    // await flutterTts.isLanguageAvailable(lang);
 
 // iOS, Android and Web only
 //see the "Pausing on Android" section for more info
 //     await flutterTts.pause();
 //
 // // iOS, macOS, and Android only
-    await flutterTts.synthesizeToFile(
-        "Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf");
-    // ar-xa-x-ard-local
-    await flutterTts.setVolume(1.0);
-    await flutterTts.setSpeechRate(0.7);
-    await flutterTts.setPitch(0.5);
+//     await flutterTts.synthesizeToFile(
+//         "Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf");
+//     // ar-xa-x-ard-local
+//     await flutterTts.setVolume(1.0);
+//     await flutterTts.setSpeechRate(0.7);
+//     await flutterTts.setPitch(0.5);
+// //
+// // // iOS only
+//     await flutterTts.setSharedInstance(true);
+// //
+// // // Android only
+//     await flutterTts.setSilence(20);
+// //
+//     await flutterTts.getEngines;
 //
-// // iOS only
-    await flutterTts.setSharedInstance(true);
+//     await flutterTts.isLanguageInstalled(lang);
 //
-// // Android only
-    await flutterTts.setSilence(20);
+//     await flutterTts.areLanguagesInstalled([lang, "en-US"]);
 //
-    await flutterTts.getEngines;
-
-    await flutterTts.isLanguageInstalled(lang);
-
-    await flutterTts.areLanguagesInstalled([lang, "en-US"]);
-
-    await flutterTts.setQueueMode(1);
-
-    await flutterTts.getMaxSpeechInputLength;
+//     await flutterTts.setQueueMode(1);
+//
+//     await flutterTts.getMaxSpeechInputLength;
   }
 
   storeOrder(id) async {
@@ -218,9 +217,9 @@ class SpeakProvider extends ChangeNotifier {
     }
     cashedNumber = int.parse(orderNumber.join());
     showOrderDialog(orderNumber.join());
-    await flutterTts.setVolume(1.0);
-    await flutterTts.setSpeechRate(0.55);
-    await flutterTts.setPitch(1.5);
+    // await flutterTts.setVolume(1.0);
+    // await flutterTts.setSpeechRate(0.55);
+    // await flutterTts.setPitch(1.5);
     print("isOpen$_isOpen");
     azureTtsSpeak(orderNumber.join());
     storeOrder(orderNumber.join());
