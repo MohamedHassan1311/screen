@@ -86,7 +86,7 @@ class _DashBoardState extends State<DashBoard> {
                   if (Provider.of<MediaProvider>(context, listen: false)
                           .getShowOrderScreen() ??
                       true)
-                    Expanded(flex: 1, child: SideBarWidget()),
+                    const Expanded(flex: 1, child: SideBarWidget()),
                   Expanded(
                       flex: 3,
                       child: Consumer<MediaProvider>(
