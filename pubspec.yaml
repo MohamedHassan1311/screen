@@ -13,7 +13,8 @@ dependencies:
     sdk: flutter
   flutter:
     sdk: flutter
-
+  flutter_azure_tts: ^0.1.6
+  audioplayers: ^5.0.0
   keep_screen_on: ^2.1.0
   flutter_tts:
   media_cache_manager: ^0.2.1

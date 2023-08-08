@@ -80,6 +80,13 @@ Future.delayed(Duration.zero,(){
                                   fontSize: 28, color: ColorResources.WHITE_COLOR),
                             ),
                           ),
+                        /*  CustomTextFormField(
+                            controller: provider.baseUrlTEC,
+                            hint: "الرابط",
+                            onChanged: (c){
+                              provider.  updateBaseUrl();
+                            },
+                          ),*/
                           Form(
                               key: _formKey,
                               child: Row(

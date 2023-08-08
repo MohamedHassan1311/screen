@@ -3,11 +3,14 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_azure_tts/flutter_azure_tts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+
 import 'package:live/app/core/utils/dimensions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,7 +31,9 @@ class MediaProvider extends ChangeNotifier {
 
   MediaProvider({
     required this.mediaRepo,
-  }){    getLastNews();}
+  }) {
+    getLastNews();
+  }
   SharedPreferences prefs = sl.get<SharedPreferences>();
   List<MediaFile>? mediaFiles = [];
   TextEditingController textEditingController = TextEditingController();
@@ -40,9 +45,10 @@ class MediaProvider extends ChangeNotifier {
     mediaFiles = [];
     notifyListeners();
   }
-  getShowOrderScreen ()=>prefs.getBool(
-  AppStorageKey.showOrderScreen,
-  );
+
+  getShowOrderScreen() => prefs.getBool(
+        AppStorageKey.showOrderScreen,
+      );
   getFilesByScreenID() async {
     await getLastNews();
     if (prefs.getString(AppStrings.appMedia) != null) {
@@ -56,10 +62,10 @@ class MediaProvider extends ChangeNotifier {
     Either<ServerFailure, Response> response =
         await mediaRepo.getFilesByScreenID();
     response.fold((l) {
-      if(prefs.getString(AppStrings.appMedia)!=null) {
+      if (prefs.getString(AppStrings.appMedia) != null) {
         mediaFiles = List<MediaFile>.from(
-          jsonDecode(prefs.getString(AppStrings.appMedia)!)
-              .map((x) => MediaFile.fromJson(x)));
+            jsonDecode(prefs.getString(AppStrings.appMedia)!)
+                .map((x) => MediaFile.fromJson(x)));
       }
 
       isLoadingScreen = false;
@@ -78,9 +84,8 @@ class MediaProvider extends ChangeNotifier {
       isLoadingScreen = false;
       notifyListeners();
     });
-
-
   }
+
   String? lastNews;
   getLastNews() async {
     if (prefs.getString(AppStrings.lastNews) != null) {
@@ -89,50 +94,41 @@ class MediaProvider extends ChangeNotifier {
 
     notifyListeners();
 
-    Either<ServerFailure, Response> response =
-        await mediaRepo.getLastNews();
+    Either<ServerFailure, Response> response = await mediaRepo.getLastNews();
     response.fold((l) {
       if (prefs.getString(AppStrings.lastNews) != null) {
         lastNews = prefs.getString(AppStrings.lastNews);
       }
       notifyListeners();
     }, (response) {
-      if(response.data!['result']!=null) {
-        prefs.setString(
-        AppStrings.lastNews,
-        jsonEncode(response.data!['result']['aname']),
-      );
-      }
-      else{
+      if (response.data!['result'] != null) {
         prefs.setString(
           AppStrings.lastNews,
-         '',
+          jsonEncode(response.data!['result']['aname']),
+        );
+      } else {
+        prefs.setString(
+          AppStrings.lastNews,
+          '',
         );
       }
-
 
       lastNews = prefs.getString(AppStrings.lastNews);
 
       notifyListeners();
     });
-
-
-
   }
 
   String lang = 'ar';
 
   List<String> orderStrings = [];
-
-
-
 }
 
 class SpeakProvider extends ChangeNotifier {
   final MediaRepo mediaRepo;
   SpeakProvider({
     required this.mediaRepo,
-  })  {
+  }) {
     initTts();
   }
   TextEditingController textEditingController = TextEditingController();
@@ -140,17 +136,19 @@ class SpeakProvider extends ChangeNotifier {
   String lang = 'ar';
   FlutterTts flutterTts = FlutterTts();
   List<String> orderStrings = [];
-restData(){
-  orderStrings = [];
-  orderNumber = [];
-  cashedNumber = 0;
-  notifyListeners();
-}
+  restData() {
+    orderStrings = [];
+    orderNumber = [];
+    cashedNumber = 0;
+    notifyListeners();
+  }
 
   initTts() async {
-    List<dynamic> languages = await flutterTts.getLanguages;
-    List<dynamic> getVoices = await flutterTts.getVoices;
-    log("languages $languages  getVoices $getVoices");
+    AzureTts.init(
+        subscriptionKey: "cecb8f6145154179ab0f12b42e9b5fa1",
+        region: "eastus",
+        withLogs: true); // enable logs
+
     await flutterTts.setLanguage(lang);
 
     await flutterTts.setVoice({"name": "ar-xa-x-ard-local", "locale": "ar"});
@@ -158,22 +156,22 @@ restData(){
 
 // iOS, Android and Web only
 //see the "Pausing on Android" section for more info
-    await flutterTts.pause();
-
-// iOS, macOS, and Android only
+//     await flutterTts.pause();
+//
+// // iOS, macOS, and Android only
     await flutterTts.synthesizeToFile(
         "Hello World", Platform.isAndroid ? "tts.wav" : "tts.caf");
     // ar-xa-x-ard-local
     await flutterTts.setVolume(1.0);
     await flutterTts.setSpeechRate(0.7);
     await flutterTts.setPitch(0.5);
-
-// iOS only
+//
+// // iOS only
     await flutterTts.setSharedInstance(true);
-
-// Android only
-//     await flutterTts.setSilence(20);
-
+//
+// // Android only
+    await flutterTts.setSilence(20);
+//
     await flutterTts.getEngines;
 
     await flutterTts.isLanguageInstalled(lang);
@@ -184,32 +182,47 @@ restData(){
 
     await flutterTts.getMaxSpeechInputLength;
   }
+
   storeOrder(id) async {
     try {
-
       notifyListeners();
-      Either<ServerFailure, Response> response = await mediaRepo.storeDoneOrder(id);
-
-
-    } catch (e) {
-
-    }
+      Either<ServerFailure, Response> response =
+          await mediaRepo.storeDoneOrder(id);
+    } catch (e) {}
   }
-  bool _isOpen = false;
-  speak() async {
 
+  bool _isOpen = false;
+  azureTtsSpeak(orderNumber) async {
+
+    final text = "الطلب رقم ${orderNumber} جاهز للتسليم";
+
+    TtsParams params = TtsParams(
+        // voice: voice,
+        voice:  Voice(name: "(Microsoft Server Speech Text to Speech Voice (ar-AE, HamdanNeural)", displayName: "Hamdan", localName: "حمدان",
+            shortName: "ar-AE-HamdanNeural", gender: "Male", locale: "ar-AE", sampleRateHertz: "48000", voiceType: "Neural", status: "GA"),
+        audioFormat: AudioOutputFormat.audio16khz32kBitrateMonoMp3,
+        // rate: 1.5, // optional prosody rate (default is 1.0)
+        text: text);
+
+    final ttsResponse = await AzureTts.getTts(params);
+
+    //Get the audio bytes.
+    await palyAudio(ttsResponse);
+  }
+
+  speak() async {
     if (_isOpen) {
       CustomNavigator.pop();
       _isOpen = false;
       notifyListeners();
     }
-    cashedNumber=int.parse(orderNumber.join());
+    cashedNumber = int.parse(orderNumber.join());
     showOrderDialog(orderNumber.join());
     await flutterTts.setVolume(1.0);
     await flutterTts.setSpeechRate(0.55);
     await flutterTts.setPitch(1.5);
     print("isOpen$_isOpen");
-    await flutterTts.speak("الطلب رقم ${orderNumber.join()} جاهز للتسليم");
+    azureTtsSpeak(orderNumber.join());
     storeOrder(orderNumber.join());
     orderStrings.add("الطلب رقم ${orderNumber.join()} جاهز للتسليم");
 
@@ -217,11 +230,16 @@ restData(){
     notifyListeners();
   }
 
+  Future<void> palyAudio(AudioSuccess ttsResponse) async {
+    AudioPlayer player = AudioPlayer();
+    await player.play(BytesSource(ttsResponse.audio));
+  }
+
   List<int> orderNumber = [];
-  int cashedNumber =0;
+  int cashedNumber = 0;
   updateOrderNumber(int dieget) {
     orderNumber.add(dieget);
-    textEditingController.text=orderNumber.join() ;
+    textEditingController.text = orderNumber.join();
     notifyListeners();
   }
 
@@ -230,8 +248,9 @@ restData(){
     speak();
     notifyListeners();
   }
+
   previousNumber() {
-    if(cashedNumber!=0) {
+    if (cashedNumber != 0) {
       orderNumber.add(--cashedNumber);
       speak();
     }
@@ -247,8 +266,13 @@ restData(){
     showDialog(
         context: CustomNavigator.navigatorState.currentContext!,
         builder: (BuildContext builderContext) {
+          Future.delayed(Duration(seconds: 5)).then((_) {
+            CustomNavigator.pop();
+            orderNumber = [];
+          });
           _timer = Timer(Duration(seconds: 5), () {
-            CustomNavigator.pop(); orderNumber = [];
+            CustomNavigator.pop();
+            orderNumber = [];
           });
 
           return Dialog(

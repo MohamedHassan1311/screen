@@ -26,6 +26,7 @@ class AuthProvider extends ChangeNotifier {
   String get token => _token;
 
   late final TextEditingController mailTEC= TextEditingController();
+  late final TextEditingController baseUrlTEC= TextEditingController();
   final TextEditingController passwordTEC = TextEditingController();
   late TextEditingController tentIDTEC = TextEditingController();
   bool _isRememberMe = true;
@@ -56,11 +57,16 @@ getShowOrderScreen()  =>
 
   authRepo.getShowOrderScreen();
 
+
+  updateBaseUrl(){
+    authRepo.updateBaseUrl("http://${baseUrlTEC.text.trim()}");
+   getTents();
+  }
   logIn({bool isFromLogin=false}) async {
     try {
         _isLoading = true;
         notifyListeners();
-        Either<ServerFailure, Response> response = await authRepo.logIn(mailTEC.text.trim(),passwordTEC.text.trim(),tent?.id);
+        Either<ServerFailure, Response> response = await authRepo.logIn(mailTEC.text.trim(),passwordTEC.text.trim(),tent?.id,"http://$baseUrlTEC");
         response.fold((fail) {
           CustomSnackBar.showSnackBar(
               notification: AppNotification(

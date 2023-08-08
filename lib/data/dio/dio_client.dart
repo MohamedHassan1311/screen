@@ -46,6 +46,18 @@ class DioClient extends ApiClient {
       "Authorization": "Bearer $token"
     };
   }
+  updateBaseUrl(Url) {
+    dio
+      ..options.baseUrl = Url
+      ..options.connectTimeout = const Duration(seconds: 60)
+      ..options.receiveTimeout = const Duration(seconds: 60)
+      ..httpClientAdapter
+      ..options.headers = {
+        'Content-Type': 'application/json; charset=UTF-8',
+        "Accept": " application/json",
+        "Authorization": "Bearer ${prefs.getString(AppStorageKey.token)}"
+      };
+  }
 
   @override
   Future<Response> get({
@@ -54,11 +66,7 @@ class DioClient extends ApiClient {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      if(useGoogleUri) {
-        dio.options.baseUrl=EndPoints.googleMapsBaseUrl;
-      }else{
-        dio.options.baseUrl = baseUrl;
-      }
+
       var response = await dio.get(uri, queryParameters: queryParameters);
 
       return response;

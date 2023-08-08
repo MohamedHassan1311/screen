@@ -66,10 +66,14 @@ class AuthRepo {
   forget() {
     sharedPreferences.remove(AppStorageKey.mail);
   }
-
-  Future<Either<ServerFailure, Response>> logIn(user, password,TenId) async {
+  updateBaseUrl(Url){
+    dioClient.updateHeader(null);
+  dioClient.updateBaseUrl(Url);
+  }
+  Future<Either<ServerFailure, Response>> logIn(user, password,TenId,baseUrl) async {
     try {
       dioClient.updateHeader(null);
+      // dioClient.updateBaseUrl(baseUrl);
       Response response = await dioClient.post(uri: EndPoints.logIn, data: {
         "userNameOrEmailAddress": user.trim(),
         "password": password,
