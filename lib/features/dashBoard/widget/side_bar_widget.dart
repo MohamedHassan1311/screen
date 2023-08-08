@@ -44,7 +44,9 @@ Future.delayed(Duration.zero,(){
     FocusScope.of(context).requestFocus(rawKeyboardListenerNode);
     return RawKeyboardListener(
         focusNode: rawKeyboardListenerNode!,
-        onKey: (event) {
+        onKey: (e){},
+
+            /*(event) {
           if(event.isKeyPressed(LogicalKeyboardKey.digit0)) {
             Provider.of<SpeakProvider>(context, listen: false). updateOrderNumber(0);
             print(0);
@@ -88,7 +90,7 @@ Future.delayed(Duration.zero,(){
             print(9);
           }
         // NOT PRINTED!!
-        },
+        },*/
       child: Consumer<SpeakProvider>(builder: (context, provider, _) {
         return BackdropFilter(
             filter: ui.ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
@@ -153,7 +155,7 @@ Future.delayed(Duration.zero,(){
                                   ),
                                 )),
                             onPressed: () async {
-                              FocusScope.of(context).unfocus();
+                              // FocusScope.of(context).unfocus();
                               provider. updateOrderNumber(int.parse('${provider.textEditingController.text.trim()}'));
 
                               provider.speak();

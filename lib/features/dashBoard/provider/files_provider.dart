@@ -243,12 +243,12 @@ restData(){
   showOrderDialog(orderNum) {
     _isOpen = true;
     notifyListeners();
-    orderNumber = [];
+
     showDialog(
         context: CustomNavigator.navigatorState.currentContext!,
         builder: (BuildContext builderContext) {
           _timer = Timer(Duration(seconds: 5), () {
-            CustomNavigator.pop();
+            CustomNavigator.pop(); orderNumber = [];
           });
 
           return Dialog(
@@ -292,7 +292,7 @@ restData(){
               ));
         }).then((val) {
       _isOpen = false;
-
+      orderNumber = [];
       notifyListeners();
       _timer?.cancel();
     });
