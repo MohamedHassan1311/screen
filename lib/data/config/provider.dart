@@ -6,6 +6,7 @@ import '../../app/localization/provider/localization_provider.dart';
 import '../../app/theme/theme_provider/theme_provider.dart';
 import '../../features/auth/select_branch_screen/provider/auth_provider.dart';
 
+import '../../features/dashBoard/provider/SpeakProvider.dart';
 import '../../features/dashBoard/provider/files_provider.dart';
 import '../../features/splash/provider/splash_provider.dart';
 import '../../main_providers/calender_provider.dart';

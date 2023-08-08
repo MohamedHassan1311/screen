@@ -9,6 +9,7 @@ import '../../../app/core/utils/color_resources.dart';
 import '../../../app/core/utils/text_styles.dart';
 import '../../../components/custom_text_form_field.dart';
 
+import '../provider/SpeakProvider.dart';
 import '../provider/files_provider.dart';
 
 class SideBarWidget extends StatefulWidget {

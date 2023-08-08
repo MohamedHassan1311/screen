@@ -8,6 +8,7 @@ import '../../app/theme/theme_provider/theme_provider.dart';
 import '../../features/auth/select_branch_screen/provider/auth_provider.dart';
 import '../../features/auth/select_branch_screen/repo/auth_repo.dart';
 
+import '../../features/dashBoard/provider/SpeakProvider.dart';
 import '../../features/dashBoard/provider/files_provider.dart';
 import '../../features/dashBoard/repo/fiels_repo.dart';
 import '../../main_providers/calender_provider.dart';

@@ -10,6 +10,7 @@ import 'package:live/app/core/utils/dimensions.dart';
 import 'package:live/data/api/end_points.dart';
 
 import 'package:flutter/material.dart';
+import 'package:live/features/dashBoard/provider/SpeakProvider.dart';
 import 'package:live/features/dashBoard/provider/files_provider.dart';
 import 'package:live/features/dashBoard/widget/side_bar_widget.dart';
 import 'package:live/features/dashBoard/widget/vedioPlayer.dart';
