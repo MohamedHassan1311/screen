@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../app/core/utils/color_resources.dart';
+import '../provider/SpeakProvider.dart';
 
 
 class VedioPlayer extends StatefulWidget {
@@ -30,8 +32,10 @@ class _VedioPlayerState extends State<VedioPlayer> {
       setState(() {});
     });
     _controller.setLooping(true);
+
     _controller.initialize().then((_) => setState(() {}));
     _controller.play();
+    Provider.of<SpeakProvider>(context, listen: false).getVideoPlayerController(_controller);
 
   }
 

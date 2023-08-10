@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:io';
 
@@ -10,20 +9,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_azure_tts/flutter_azure_tts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:live/app/core/utils/dimensions.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../app/core/utils/color_resources.dart';
 import '../../../app/core/utils/text_styles.dart';
 import '../../../data/error/failures.dart';
 import '../../../navigation/custom_navigation.dart';
 import '../repo/fiels_repo.dart';
+
 class SpeakProvider extends ChangeNotifier {
   final MediaRepo mediaRepo;
   SpeakProvider({
     required this.mediaRepo,
   }) {
+    initAzure();
+    focusTextField.requestFocus();
     initTts();
   }
   TextEditingController textEditingController = TextEditingController();
+  late VideoPlayerController _controller;
+
+  getVideoPlayerController(VideoPlayerController controller) {
+    _controller = controller;
+  }
 
   String lang = 'ar';
   FlutterTts flutterTts = FlutterTts();
@@ -34,14 +42,16 @@ class SpeakProvider extends ChangeNotifier {
     cashedNumber = 0;
     notifyListeners();
   }
-initAzure(){
-  AzureTts.init(
-      subscriptionKey: "cecb8f6145154179ab0f12b42e9b5fa1",
-      region: "eastus",
-      withLogs: true);
-}
+
+  initAzure() {
+    AzureTts.init(
+        subscriptionKey: "cecb8f6145154179ab0f12b42e9b5fa1",
+        region: "eastus",
+        withLogs: true);
+  }
+
   initTts() async {
-   // enable logs
+    // enable logs
 
     await flutterTts.setLanguage(lang);
     //
@@ -87,13 +97,21 @@ initAzure(){
 
   bool _isOpen = false;
   azureTtsSpeak(orderNumber) async {
-
     final text = "الطلب رقم ${orderNumber} جاهز للتسليم";
 
     TtsParams params = TtsParams(
         // voice: voice,
-        voice:  Voice(name: "(Microsoft Server Speech Text to Speech Voice (ar-AE, HamdanNeural)", displayName: "Hamdan", localName: "حمدان",
-            shortName: "ar-AE-HamdanNeural", gender: "Male", locale: "ar-AE", sampleRateHertz: "48000", voiceType: "Neural", status: "GA"),
+        voice: Voice(
+            name:
+                "(Microsoft Server Speech Text to Speech Voice (ar-AE, HamdanNeural)",
+            displayName: "Hamdan",
+            localName: "حمدان",
+            shortName: "ar-AE-HamdanNeural",
+            gender: "Male",
+            locale: "ar-AE",
+            sampleRateHertz: "48000",
+            voiceType: "Neural",
+            status: "GA"),
         audioFormat: AudioOutputFormat.audio16khz32kBitrateMonoMp3,
         // rate: 1.5, // optional prosody rate (default is 1.0)
         text: text);
@@ -101,10 +119,10 @@ initAzure(){
     final ttsResponse = await AzureTts.getTts(params);
 
     //Get the audio bytes.
-    await palyAudio(ttsResponse);
+     palyAudio(ttsResponse);
   }
-  ttsSpeak(orderNumber) async {
 
+  ttsSpeak(orderNumber) async {
     final text = "الطلب رقم ${orderNumber} جاهز للتسليم";
 
     await flutterTts.setVolume(1.0);
@@ -113,29 +131,70 @@ initAzure(){
     flutterTts.speak(text);
   }
 
+  FocusNode focusTextField = FocusNode();
+  List<int> orderNumberList = [];
+  Timer ?checkerTimer;
   speak() async {
-    if (_isOpen) {
-      CustomNavigator.pop();
-      _isOpen = false;
-      notifyListeners();
-    }
     cashedNumber = int.parse(orderNumber.join());
-    showOrderDialog(orderNumber.join());
+    orderNumberList.add(cashedNumber);
+    checkerTimer?.cancel();
+    checkerTimer=  Timer.periodic(Duration(seconds: 1), (Timer t) async {
+      print("orderNumberList$orderNumberList  " + "$_isOpen");
+      for (var orderNum in orderNumberList) {
+Future.delayed(Duration(milliseconds: 500),(){
+  if (_isOpen == false) {
+    CustomNavigator.pop();
 
-    print("isOpen$_isOpen");
-    // azureTtsSpeak(orderNumber.join());
+    showOrderDialog(orderNum);
+    // ttsSpeak(orderNum);
+    azureTtsSpeak(orderNum);
 
-    ttsSpeak(orderNumber.join());
+    textEditingController.clear();
     storeOrder(orderNumber.join());
     orderStrings.add("الطلب رقم ${orderNumber.join()} جاهز للتسليم");
+  }
+});
+
+      }
+    });
 
     orderNumber = [];
     notifyListeners();
   }
 
+  List<AudioSuccess> audioList = [];
+
   Future<void> palyAudio(AudioSuccess ttsResponse) async {
-    AudioPlayer player = AudioPlayer();
-    await player.play(BytesSource(ttsResponse.audio));
+    // audioList.add(ttsResponse);
+    final player = AudioPlayer();
+    // Timer(Duration(seconds: 2), () async {
+    //   for (AudioSuccess audiIteam in audioList) {
+    player.stop();
+     player.play(BytesSource(ttsResponse.audio));
+
+    //   }
+    // });
+
+    // player.onPlayerStateChanged.listen(
+    //   (it) async {
+    //     print(it);
+    //     switch (it) {
+    //       case PlayerState.completed:
+    //         if (audioList.isNotEmpty) {
+    //           audioList.removeLast();
+    //           // await player.play(BytesSource(audioList.first.audio));
+    //         }
+    //
+    //         break;
+    //       // case PlayerState.playing:
+    //       //   player.pause();
+    //       //   break;
+    //
+    //       default:
+    //         break;
+    //     }
+    //   },
+    // );
   }
 
   List<int> orderNumber = [];
@@ -143,6 +202,12 @@ initAzure(){
   updateOrderNumber(int dieget) {
     orderNumber.add(dieget);
     textEditingController.text = orderNumber.join();
+    notifyListeners();
+  }
+  updateOrderNumberBarcode(int dieget) {
+    orderNumber.add(dieget);
+    textEditingController.text = orderNumber.join();
+    speak();
     notifyListeners();
   }
 
@@ -161,28 +226,46 @@ initAzure(){
   }
 
   Timer? _timer;
-
-  showOrderDialog(orderNum) {
+  Timer? popUpFuture;
+  Future showOrderDialog(orderNum) async {
     _isOpen = true;
+    popUpFuture?.cancel();
+    orderNumberList.remove(orderNum);
     notifyListeners();
 
-    showDialog(
+    await showDialog(
         context: CustomNavigator.navigatorState.currentContext!,
+        barrierDismissible:false,
         builder: (BuildContext builderContext) {
-          Future.delayed(Duration(seconds: 5)).then((_) {
+          popUpFuture=   Timer(Duration(seconds: 10), () {
             CustomNavigator.pop();
-            orderNumber = [];
-          });
-          _timer = Timer(Duration(seconds: 5), () {
-            CustomNavigator.pop();
-            orderNumber = [];
-          });
 
+            focusTextField.requestFocus();
+
+            _isOpen = false;
+            orderNumber = [];
+
+            if (!_controller.value.isPlaying) {
+              _controller.play();
+            }
+
+          });
+    /*      Future.delayed(const Duration(seconds: 10)).then((_) {
+            CustomNavigator.pop();
+
+            focusTextField.requestFocus();
+
+            _isOpen = false;
+            orderNumber = [];
+
+            if (!_controller.value.isPlaying) {
+              _controller.play();
+            }
+          }
+          );*/
           return Dialog(
               backgroundColor: Colors.white,
-              // title: Text('Title'),
               child: Container(
-                // width: double.infinity/2,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   color: Colors.white,
@@ -207,7 +290,7 @@ initAzure(){
                       Padding(
                         padding: EdgeInsets.fromLTRB(0, 30.h, 0, 24.h),
                         child: Text(
-                          orderNum,
+                          orderNum.toString(),
                           style: AppTextStyles.w600.copyWith(
                               fontSize: 55,
                               color: ColorResources.PRIMARY_COLOR),
@@ -218,8 +301,10 @@ initAzure(){
                 ),
               ));
         }).then((val) {
-      _isOpen = false;
+
       orderNumber = [];
+      _isOpen = false;
+
       notifyListeners();
       _timer?.cancel();
     });

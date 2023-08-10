@@ -74,10 +74,21 @@ class _DashBoardState extends State<DashBoard> {
           onBarcodeScanned: (barcode) {
             if (!visible) return;
             debugPrint(barcode);
-            Provider.of<SpeakProvider>(context, listen: false)
-                .updateOrderNumber(int.parse(barcode));
+            // Timer.periodic(Duration(milliseconds: 100), (Timer t) async {
+            //   if(t.tick<5) {
+            //     Provider.of<SpeakProvider>(context, listen: false)
+            //         .updateOrderNumberBarcode(t.tick);
+            //     // Provider.of<SpeakProvider>(context, listen: false).speak();
+            //   }
+            // });
 
-            Provider.of<SpeakProvider>(context, listen: false).speak();
+            final data = barcode.replaceAll(new RegExp(r'[^0-9]'), '');
+            if (int.tryParse(data) != null) {
+              print(data);
+              Provider.of<SpeakProvider>(context, listen: false)
+                  .updateOrderNumberBarcode(int.parse(data));
+              // Provider.of<SpeakProvider>(context, listen: false).speak();
+            }
           },
           child: Stack(
             children: [
