@@ -3,7 +3,6 @@ import 'package:live/app/core/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../app/core/utils/color_resources.dart';
-import 'custom_images.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final String? hint;
@@ -112,13 +111,7 @@ autofocus:read == true ? true : false,
                         height: 22.h,
                         color: pIconColor ?? ColorResources.DISABLED,
                       )
-                    : pSvgIcon != null
-                        ? customImageIconSVG(
-                            imageName: pSvgIcon!,
-                            color: pIconColor ?? Colors.black,
-                            height: 22.h,
-                          )
-                        : null),
+                    : null),
           ),
           focusedBorder: read == true
               ? OutlineInputBorder(

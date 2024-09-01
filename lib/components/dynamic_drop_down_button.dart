@@ -4,7 +4,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import '../../app/core/utils/color_resources.dart';
 import '../../app/core/utils/dimensions.dart';
 import '../../app/core/utils/text_styles.dart';
-import 'custom_images.dart';
 
 class DynamicDropDownButton extends StatefulWidget {
   final List<dynamic> items;
@@ -93,13 +92,7 @@ class _DynamicDropDownButtonState extends State<DynamicDropDownButton> {
                     width: 22.w,
                     color: widget.pIconColor ?? Colors.black,
                   )
-                : widget.pSvgIcon != null
-                    ? customImageIconSVG(
-                        imageName: widget.pSvgIcon!,
-                        color: widget.pIconColor ?? Colors.black,
-                        height: 22.h,
-                      )
-                    : null,
+                :  null,
           ),
           fillColor: ColorResources.FILL_COLOR,
           filled: true,

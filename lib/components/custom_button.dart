@@ -3,7 +3,6 @@ import 'package:live/app/core/utils/extensions.dart';
 import 'package:flutter/material.dart';
 import '../../app/core/utils/color_resources.dart';
 import '../app/core/utils/text_styles.dart';
-import 'custom_images.dart';
 
 class CustomButton extends StatelessWidget {
   final void Function()? onTap;
@@ -75,22 +74,7 @@ class CustomButton extends StatelessWidget {
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (assetIcon != null)
-                        customImageIcon(
-                            imageName: assetIcon!,
-                            color: iconColor,
-                            width: 24.w,
-                            height: 24.w),
-                      if (assetIcon != null)
-                        SizedBox(
-                          width: 8.w,
-                        ),
-                      if (svgIcon != null)
-                        customImageIconSVG(
-                            imageName: svgIcon!,
-                            color: iconColor,
-                            width: 18.w,
-                            height: 18.w),
+
                       if (svgIcon != null)
                         SizedBox(
                           width: 8.w,
