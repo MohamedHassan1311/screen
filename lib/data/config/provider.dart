@@ -9,7 +9,6 @@ import '../../features/auth/select_branch_screen/provider/auth_provider.dart';
 import '../../features/dashBoard/provider/SpeakProvider.dart';
 import '../../features/dashBoard/provider/files_provider.dart';
 import '../../features/splash/provider/splash_provider.dart';
-import '../../main_providers/calender_provider.dart';
 
 
 abstract class ProviderList {
@@ -23,9 +22,7 @@ abstract class ProviderList {
     ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
     ChangeNotifierProvider(create: (_) => di.sl<MediaProvider>()),
 
-    ChangeNotifierProvider(
-      create: (_) => di.sl<CalenderProvider>(),
-    ),
+
 
 
   ];

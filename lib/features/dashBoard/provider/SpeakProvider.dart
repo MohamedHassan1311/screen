@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_azure_tts/flutter_azure_tts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:live/app/core/utils/dimensions.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../app/core/utils/color_resources.dart';
@@ -22,9 +24,26 @@ class SpeakProvider extends ChangeNotifier {
   SpeakProvider({
     required this.mediaRepo,
   }) {
-    initAzure();
+    // initAzure();
     focusTextField.requestFocus();
     initTts();
+    finshSpeek.stream.listen((v) {
+      log("TTS finish Speek  $v  ");
+      // popUpFuture=   Timer(Duration(seconds: 00), () {
+      if (v == 1) {
+        CustomNavigator.pop();
+
+        // focusTextField.requestFocus();
+
+        _isOpen = false;
+        orderNumber = [];
+
+        if (!_controller.value.isPlaying) {
+          _controller.play();
+        }
+      }
+      // });
+    });
   }
   TextEditingController textEditingController = TextEditingController();
   late VideoPlayerController _controller;
@@ -52,12 +71,12 @@ class SpeakProvider extends ChangeNotifier {
 
   initTts() async {
     // enable logs
-
+    log("Init local TTS");
     await flutterTts.setLanguage(lang);
     //
     await flutterTts.setVoice({"name": "ar-xa-x-ard-local", "locale": "ar"});
     await flutterTts.isLanguageAvailable(lang);
-
+    await flutterTts.awaitSynthCompletion(true);
 // iOS, Android and Web only
 //see the "Pausing on Android" section for more info
     await flutterTts.pause();
@@ -83,10 +102,12 @@ class SpeakProvider extends ChangeNotifier {
     await flutterTts.areLanguagesInstalled([lang, "en-US"]);
 
     await flutterTts.setQueueMode(1);
-
+    await flutterTts.awaitSynthCompletion(true);
+    await flutterTts.awaitSpeakCompletion(true);
     await flutterTts.getMaxSpeechInputLength;
   }
 
+  bool isTtsFinshed = true;
   storeOrder(id) async {
     try {
       notifyListeners();
@@ -119,11 +140,21 @@ class SpeakProvider extends ChangeNotifier {
     final ttsResponse = await AzureTts.getTts(params);
 
     //Get the audio bytes.
-     palyAudio(ttsResponse);
+    palyAudio(ttsResponse);
   }
 
+  final finshSpeek = BehaviorSubject<int>();
   ttsSpeak(orderNumber) async {
     final text = "الطلب رقم ${orderNumber} جاهز للتسليم";
+    flutterTts.setStartHandler(() {
+      log("TTS Start  ");
+      isTtsFinshed = false;
+    });
+    flutterTts.setCompletionHandler(() {
+      isTtsFinshed = true;
+      finshSpeek.sink.add(1);
+      log("TTS Completion   ");
+    });
 
     await flutterTts.setVolume(1.0);
     await flutterTts.setSpeechRate(0.55);
@@ -133,68 +164,40 @@ class SpeakProvider extends ChangeNotifier {
 
   FocusNode focusTextField = FocusNode();
   List<int> orderNumberList = [];
-  Timer ?checkerTimer;
+  Timer? checkerTimer;
   speak() async {
     cashedNumber = int.parse(orderNumber.join());
     orderNumberList.add(cashedNumber);
     checkerTimer?.cancel();
-    checkerTimer=  Timer.periodic(Duration(seconds: 1), (Timer t) async {
+    checkerTimer = Timer.periodic(Duration(seconds: 1), (Timer t) async {
       print("orderNumberList$orderNumberList  " + "$_isOpen");
       for (var orderNum in orderNumberList) {
-Future.delayed(Duration(milliseconds: 500),(){
-  if (_isOpen == false) {
-    CustomNavigator.pop();
+        Future.delayed(Duration(milliseconds: 10), () {
+          if (_isOpen == false) {
+            CustomNavigator.pop();
 
-    showOrderDialog(orderNum);
-    // ttsSpeak(orderNum);
-    azureTtsSpeak(orderNum);
+            showOrderDialog(orderNum);
+            ttsSpeak(orderNum);
+            // azureTtsSpeak(orderNum);
 
-    textEditingController.clear();
-    storeOrder(orderNumber.join());
-    orderStrings.add("الطلب رقم ${orderNumber.join()} جاهز للتسليم");
-  }
-});
-
+            textEditingController.clear();
+            storeOrder(orderNumber.join());
+            orderStrings.add("الطلب رقم ${orderNumber.join()} جاهز للتسليم");
+          }
+        });
       }
     });
 
-    orderNumber = [];
+    // orderNumber = [];
     notifyListeners();
   }
 
   List<AudioSuccess> audioList = [];
 
   Future<void> palyAudio(AudioSuccess ttsResponse) async {
-    // audioList.add(ttsResponse);
     final player = AudioPlayer();
-    // Timer(Duration(seconds: 2), () async {
-    //   for (AudioSuccess audiIteam in audioList) {
     player.stop();
-     player.play(BytesSource(ttsResponse.audio));
-
-    //   }
-    // });
-
-    // player.onPlayerStateChanged.listen(
-    //   (it) async {
-    //     print(it);
-    //     switch (it) {
-    //       case PlayerState.completed:
-    //         if (audioList.isNotEmpty) {
-    //           audioList.removeLast();
-    //           // await player.play(BytesSource(audioList.first.audio));
-    //         }
-    //
-    //         break;
-    //       // case PlayerState.playing:
-    //       //   player.pause();
-    //       //   break;
-    //
-    //       default:
-    //         break;
-    //     }
-    //   },
-    // );
+    player.play(BytesSource(ttsResponse.audio));
   }
 
   List<int> orderNumber = [];
@@ -204,6 +207,7 @@ Future.delayed(Duration(milliseconds: 500),(){
     textEditingController.text = orderNumber.join();
     notifyListeners();
   }
+
   updateOrderNumberBarcode(int dieget) {
     orderNumber.add(dieget);
     textEditingController.text = orderNumber.join();
@@ -235,34 +239,8 @@ Future.delayed(Duration(milliseconds: 500),(){
 
     await showDialog(
         context: CustomNavigator.navigatorState.currentContext!,
-        barrierDismissible:false,
+        barrierDismissible: false,
         builder: (BuildContext builderContext) {
-          popUpFuture=   Timer(Duration(seconds: 10), () {
-            CustomNavigator.pop();
-
-            focusTextField.requestFocus();
-
-            _isOpen = false;
-            orderNumber = [];
-
-            if (!_controller.value.isPlaying) {
-              _controller.play();
-            }
-
-          });
-    /*      Future.delayed(const Duration(seconds: 10)).then((_) {
-            CustomNavigator.pop();
-
-            focusTextField.requestFocus();
-
-            _isOpen = false;
-            orderNumber = [];
-
-            if (!_controller.value.isPlaying) {
-              _controller.play();
-            }
-          }
-          );*/
           return Dialog(
               backgroundColor: Colors.white,
               child: Container(
@@ -301,7 +279,6 @@ Future.delayed(Duration(milliseconds: 500),(){
                 ),
               ));
         }).then((val) {
-
       orderNumber = [];
       _isOpen = false;
 

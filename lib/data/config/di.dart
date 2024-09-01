@@ -11,7 +11,6 @@ import '../../features/auth/select_branch_screen/repo/auth_repo.dart';
 import '../../features/dashBoard/provider/SpeakProvider.dart';
 import '../../features/dashBoard/provider/files_provider.dart';
 import '../../features/dashBoard/repo/fiels_repo.dart';
-import '../../main_providers/calender_provider.dart';
 import '../api/end_points.dart';
 import '../network/netwok_info.dart';
 import '../dio/dio_client.dart';
@@ -50,7 +49,6 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AuthProvider(authRepo: sl()));
   sl.registerLazySingleton(() => MediaProvider(mediaRepo: sl()));
   sl.registerLazySingleton(() => SpeakProvider(mediaRepo: sl()));
-  sl.registerLazySingleton(() => CalenderProvider());
 ;
 
 

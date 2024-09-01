@@ -1,5 +1,5 @@
 class EndPoints {
-  static const String baseUrl = 'http://154.38.165.214:55';
+  static const String baseUrl = 'http://141.94.143.78:8084';
   static const String baseUrlWebSocketOrders = 'http://154.38.165.214:55/signalr-Orders';
   static const String baseUrlWebSocketOrdersRec = 'http://154.38.165.214:55/signalr-OrdersRec';
 
